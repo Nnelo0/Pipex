@@ -6,7 +6,7 @@
 /*   By: nnelo <nnelo@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/19 17:55:46 by nnelo             #+#    #+#             */
-/*   Updated: 2024/12/19 19:38:24 by nnelo            ###   ########.fr       */
+/*   Updated: 2024/12/19 19:58:30 by nnelo            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,7 +42,11 @@ static void	write_in_pipe(int files[2], int fd[2], char **argv, char **envp)
 	dup2(fd[1], STDOUT_FILENO);
 	close_all(files, fd);
 	cmd1 = ft_split(argv[2], ' ');
+	if (!cmd1)
+		free_cmd(cmd1);
 	path = ft_strjoin("/bin/", cmd1[0]);
+	if (!path)
+		free(path);
 	execve(path, cmd1, envp);
 	write(2, "Execve failed for cmd1\n", 23);
 	free_cmd(cmd1);
@@ -59,7 +63,11 @@ static void	write_in_file(int files[2], int fd[2], char **argv, char **envp)
 	dup2(files[1], STDOUT_FILENO);
 	close_all(files, fd);
 	cmd2 = ft_split(argv[3], ' ');
+	if (!cmd2)
+		free_cmd(cmd2);
 	path = ft_strjoin("/bin/", cmd2[0]);
+	if (!path)
+		free(path);
 	execve(path, cmd2, envp);
 	write(2, "Execve failed for cmd2\n", 23);
 	free_cmd(cmd2);
