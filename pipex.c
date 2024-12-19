@@ -6,7 +6,7 @@
 /*   By: nnelo <nnelo@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/19 17:55:46 by nnelo             #+#    #+#             */
-/*   Updated: 2024/12/19 19:58:30 by nnelo            ###   ########.fr       */
+/*   Updated: 2024/12/19 21:43:57 by nnelo            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,10 +43,13 @@ static void	write_in_pipe(int files[2], int fd[2], char **argv, char **envp)
 	close_all(files, fd);
 	cmd1 = ft_split(argv[2], ' ');
 	if (!cmd1)
-		free_cmd(cmd1);
+		exit(1);
 	path = ft_strjoin("/bin/", cmd1[0]);
 	if (!path)
-		free(path);
+	{
+		free_cmd(cmd1);
+		exit(1);
+	}
 	execve(path, cmd1, envp);
 	write(2, "Execve failed for cmd1\n", 23);
 	free_cmd(cmd1);
@@ -64,10 +67,13 @@ static void	write_in_file(int files[2], int fd[2], char **argv, char **envp)
 	close_all(files, fd);
 	cmd2 = ft_split(argv[3], ' ');
 	if (!cmd2)
-		free_cmd(cmd2);
+		exit(1);
 	path = ft_strjoin("/bin/", cmd2[0]);
 	if (!path)
-		free(path);
+	{
+		free_cmd(cmd2);
+		exit(1);
+	}
 	execve(path, cmd2, envp);
 	write(2, "Execve failed for cmd2\n", 23);
 	free_cmd(cmd2);
@@ -91,7 +97,7 @@ int	main(int argc, char **argv, char **envp)
 		exit(ft_printf("%s: permission denied\n", argv[1]));
 	pid = fork();
 	files[0] = open(argv[1], O_RDONLY);
-	files[1] = open(argv[4], O_WRONLY | O_CREAT | O_TRUNC, 0777);
+	files[1] = open(argv[4], O_WRONLY | O_CREAT | O_TRUNC, 0664);
 	if (files[0] == -1 || files[1] == -1 || pid == -1)
 		exit(ft_printf("failed open file or fork error\n"));
 	if (pid == 0)
