@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   pipex.c                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: nnelo <nnelo@student.42.fr>                +#+  +:+       +#+        */
+/*   By: ebroudic <ebroudic@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/19 17:55:46 by nnelo             #+#    #+#             */
-/*   Updated: 2024/12/19 21:43:57 by nnelo            ###   ########.fr       */
+/*   Updated: 2024/12/20 10:24:48 by ebroudic         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,7 @@ static void	free_cmd(char **cmd)
 	free(cmd);
 }
 
-static void	close_all(int files[2], int fd[2])
+void	close_all(int files[2], int fd[2])
 {
 	close(fd[0]);
 	close(fd[1]);
@@ -44,14 +44,14 @@ static void	write_in_pipe(int files[2], int fd[2], char **argv, char **envp)
 	cmd1 = ft_split(argv[2], ' ');
 	if (!cmd1)
 		exit(1);
-	path = ft_strjoin("/bin/", cmd1[0]);
+	path = find_command_path(*cmd1, envp);
 	if (!path)
 	{
 		free_cmd(cmd1);
 		exit(1);
 	}
 	execve(path, cmd1, envp);
-	write(2, "Execve failed for cmd1\n", 23);
+	write(2, "command not found for cmd1\n", 27);
 	free_cmd(cmd1);
 	free(path);
 	exit(1);
@@ -68,14 +68,14 @@ static void	write_in_file(int files[2], int fd[2], char **argv, char **envp)
 	cmd2 = ft_split(argv[3], ' ');
 	if (!cmd2)
 		exit(1);
-	path = ft_strjoin("/bin/", cmd2[0]);
+	path = find_command_path(*cmd2, envp);
 	if (!path)
 	{
 		free_cmd(cmd2);
 		exit(1);
 	}
 	execve(path, cmd2, envp);
-	write(2, "Execve failed for cmd2\n", 23);
+	write(2, "command not found for cmd2\n", 27);
 	free_cmd(cmd2);
 	free(path);
 	exit(1);
@@ -91,15 +91,10 @@ int	main(int argc, char **argv, char **envp)
 		exit(ft_printf("Usage: ./pipex infile cmd1 cmd2 outfile\n"));
 	if (pipe(fd) == -1)
 		exit(ft_printf("pipe error\n"));
-	if (access(argv[1], F_OK) == -1)
-		exit(ft_printf("%s: No such file\n", argv[1]));
-	if (access(argv[1], R_OK) == -1)
-		exit(ft_printf("%s: permission denied\n", argv[1]));
+	open_files(files, argv, fd);
 	pid = fork();
-	files[0] = open(argv[1], O_RDONLY);
-	files[1] = open(argv[4], O_WRONLY | O_CREAT | O_TRUNC, 0664);
-	if (files[0] == -1 || files[1] == -1 || pid == -1)
-		exit(ft_printf("failed open file or fork error\n"));
+	if (pid == -1)
+		exit(ft_printf("fork error\n"));
 	if (pid == 0)
 		write_in_pipe(files, fd, argv, envp);
 	if (fork() == 0)

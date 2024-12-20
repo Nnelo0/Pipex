@@ -1,7 +1,7 @@
 NAME = pipex
 CC = cc
 CFLAGS = -Wall -Werror -Wextra
-SRCS = pipex.c \
+SRCS = pipex.c utils.c\
 
 LIBFTDIR = libft
 LIBFT = $(LIBFTDIR)/libft.a
