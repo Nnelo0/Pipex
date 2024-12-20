@@ -6,7 +6,7 @@
 /*   By: ebroudic <ebroudic@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/20 09:18:33 by ebroudic          #+#    #+#             */
-/*   Updated: 2024/12/20 17:36:53 by ebroudic         ###   ########.fr       */
+/*   Updated: 2024/12/20 17:42:33 by ebroudic         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,9 +34,10 @@ void	open_files(int files[2], char **argv, int fd[2])
 		exit(ft_printf("%s: permission denied\n", argv[4]));
 	}
 }
+
 void	free_paths(char **paths)
 {
-	int i;
+	int	i;
 
 	i = -1;
 	while (paths[++i])
