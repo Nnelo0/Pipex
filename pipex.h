@@ -6,7 +6,7 @@
 /*   By: ebroudic <ebroudic@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/19 17:53:43 by nnelo             #+#    #+#             */
-/*   Updated: 2024/12/20 10:24:55 by ebroudic         ###   ########.fr       */
+/*   Updated: 2024/12/20 17:37:22 by ebroudic         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,4 +20,7 @@
 void	open_files(int files[2], char **argv, int fd[2]);
 char	*find_command_path(char *cmd, char **envp);
 void	close_all(int files[2], int fd[2]);
+void	check_command(char **argv, char **envp);
+void	free_cmd(char **cmd);
+void	check_arg(char **argv);
 #endif

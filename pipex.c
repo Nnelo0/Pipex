@@ -6,13 +6,13 @@
 /*   By: ebroudic <ebroudic@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/19 17:55:46 by nnelo             #+#    #+#             */
-/*   Updated: 2024/12/20 10:24:48 by ebroudic         ###   ########.fr       */
+/*   Updated: 2024/12/20 17:37:16 by ebroudic         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "pipex.h"
 
-static void	free_cmd(char **cmd)
+void	free_cmd(char **cmd)
 {
 	int	i;
 
@@ -47,11 +47,12 @@ static void	write_in_pipe(int files[2], int fd[2], char **argv, char **envp)
 	path = find_command_path(*cmd1, envp);
 	if (!path)
 	{
+		write(2, "pipex: command not found for cmd1\n", 34);
 		free_cmd(cmd1);
 		exit(1);
 	}
 	execve(path, cmd1, envp);
-	write(2, "command not found for cmd1\n", 27);
+	write(2, "pipex: command not found for cmd1\n", 34);
 	free_cmd(cmd1);
 	free(path);
 	exit(1);
@@ -71,11 +72,12 @@ static void	write_in_file(int files[2], int fd[2], char **argv, char **envp)
 	path = find_command_path(*cmd2, envp);
 	if (!path)
 	{
+		write(2, "pipex: command not found for cmd2\n", 34);
 		free_cmd(cmd2);
 		exit(1);
 	}
 	execve(path, cmd2, envp);
-	write(2, "command not found for cmd2\n", 27);
+	write(2, "pipex: command not found for cmd2\n", 34);
 	free_cmd(cmd2);
 	free(path);
 	exit(1);
@@ -89,6 +91,8 @@ int	main(int argc, char **argv, char **envp)
 
 	if (argc != 5)
 		exit(ft_printf("Usage: ./pipex infile cmd1 cmd2 outfile\n"));
+	check_arg(argv);
+	check_command(argv, envp);
 	if (pipe(fd) == -1)
 		exit(ft_printf("pipe error\n"));
 	open_files(files, argv, fd);
