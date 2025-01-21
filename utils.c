@@ -6,32 +6,24 @@
 /*   By: ebroudic <ebroudic@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/20 09:18:33 by ebroudic          #+#    #+#             */
-/*   Updated: 2024/12/20 17:42:33 by ebroudic         ###   ########.fr       */
+/*   Updated: 2025/01/21 13:06:23 by ebroudic         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "pipex.h"
 
-void	open_files(int files[2], char **argv, int fd[2])
+void	open_files(int files[2], char **argv)
 {
 	files[0] = open(argv[1], O_RDONLY);
 	files[1] = open(argv[4], O_WRONLY | O_CREAT | O_TRUNC, 0664);
-	if (files[0] == -1 && files[1] == -1)
-	{
-		close_all(files, fd);
-		exit(ft_printf("%s: No such file or permission denied\n\
-%s: permission denied\n", argv[1], argv[4]));
-	}
 	if (files[0] == -1)
-	{
-		close_all(files, fd);
-		exit(ft_printf("pipex: No such file or permission denied: %s\n", \
-		argv[1]));
-	}
+		ft_printf("pipex: No such file or permission denied: %s\n", \
+		argv[1]);
 	if (files[1] == -1)
 	{
-		close_all(files, fd);
-		exit(ft_printf("%s: permission denied\n", argv[4]));
+		if (files[0] != -1)
+			close(files[0]);
+		exit(ft_printf("pipex: permission denied: %s\n", argv[4]));
 	}
 }
 
@@ -45,16 +37,16 @@ void	free_paths(char **paths)
 	free(paths);
 }
 
-char	*find_command_path(char *cmd, char **envp)
+char	*find_command_path(char *cmd, char **envp, int i)
 {
 	char	**paths;
 	char	*path;
-	int		i;
 	char	*part_path;
 
-	i = 0;
-	while (ft_strnstr(envp[i], "PATH", 4) == 0)
+	while (envp[i] && ft_strnstr(envp[i], "PATH=", 5) == 0)
 		i++;
+	if (!envp[i])
+		return (NULL);
 	paths = ft_split(envp[i] + 5, ':');
 	i = 0;
 	while (paths[i])
@@ -74,41 +66,35 @@ char	*find_command_path(char *cmd, char **envp)
 	return (0);
 }
 
-void	check_arg(char **argv)
+static void	close_and_free(t_pipex *pipex, int files[2])
 {
-	if ((!argv[2] || argv[2][0] == '\0') && (!argv[3] || argv[3][0] == '\0'))
-		exit(ft_printf("pipex: cmd1 is empty\npipex: cmd2 is empty\n"));
-	if (!argv[2] || argv[2][0] == '\0')
-		exit(ft_printf("pipex: cmd1 is empty\n"));
-	if (!argv[3] || argv[3][0] == '\0')
-		exit(ft_printf("pipex: cmd2 is empty\n"));
+	free_cmd(pipex->cmd1);
+	free_cmd(pipex->cmd2);
+	close(files[1]);
+	close(files[0]);
 }
 
-void	check_command(char **argv, char **envp)
+void	check_command(char **argv, char **envp, t_pipex *pipex, int files[2])
 {
-	char	*path;
-	char	*path2;
-	char	**cmd2;
-	char	**cmd1;
-
-	cmd1 = ft_split(argv[2], ' ');
-	path = find_command_path(*cmd1, envp);
-	cmd2 = ft_split(argv[3], ' ');
-	path2 = find_command_path(*cmd2, envp);
-	if (!path && !path2)
+	pipex->cmd1 = ft_split(argv[2], ' ');
+	pipex->path1 = find_command_path(*pipex->cmd1, envp, 0);
+	pipex->cmd2 = ft_split(argv[3], ' ');
+	pipex->path2 = find_command_path(*pipex->cmd2, envp, 0);
+	if (!pipex->path1 && !pipex->path2)
 	{
-		free_cmd(cmd1);
-		free_cmd(cmd2);
+		close_and_free(pipex, files);
 		exit(write(2, "pipex: command not found for cmd1 and cmd2\n", 43));
 	}
-	if (!path)
+	if (!pipex->path1)
 	{
-		free_cmd(cmd1);
+		free(pipex->path2);
+		close_and_free(pipex, files);
 		exit(write(2, "pipex: command not found for cmd1\n", 34));
 	}
-	if (!path2)
+	if (!pipex->path2)
 	{
-		free_cmd(cmd2);
+		free(pipex->path1);
+		close_and_free(pipex, files);
 		exit(write(2, "pipex: command not found for cmd2\n", 34));
 	}
 }

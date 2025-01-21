@@ -60,16 +60,18 @@ SRCS = \
 
 AR = ar rcs
 
+OBJS = $(SRCS:.c=.o)
+
 all: $(NAME)
 
-$(NAME):
-	$(CC) $(CFLAGS) -c $(SRCS)
-	$(AR) $(NAME) *.o
-	@rm -f *.o
-	@echo "Library $(NAME) successfully created!"
+$(NAME): $(OBJS)
+	$(AR) $(NAME) $(OBJS)
+
+%.o: %.c
+	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
-	@echo "No .o files to clean in this version."
+	$(RM) $(OBJS)
 
 fclean: clean
 	$(RM) $(NAME)
